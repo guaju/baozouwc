@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
@@ -19,6 +20,8 @@ import com.guaju.baozouwc.utils.TTSController;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by root on 17-6-22.
@@ -41,6 +44,10 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nav_layout);
+        //获取 AMapNaviView 实例
+        mAMapNaviView = (AMapNaviView) findViewById(R.id.navi_view);
+        mAMapNaviView.onCreate(savedInstanceState);
+        mAMapNaviView.setAMapNaviViewListener(this);
         //实例化语音引擎
         mTtsManager = TTSController.getInstance(getApplicationContext());
         mTtsManager.init();
@@ -55,11 +62,26 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
          sList = new ArrayList<NaviLatLng>();
         //存储算路终点的列表
          eList = new ArrayList<NaviLatLng>();
-        //获取 AMapNaviView 实例
-        mAMapNaviView = (AMapNaviView) findViewById(R.id.navi_view);
 
 
-        myAMapNaviListener = new MyAMapNaviListener() {
+
+
+
+
+
+        AMapNaviViewOptions viewOptions = mAMapNaviView.getViewOptions();
+        viewOptions.setLayoutVisible(true);
+        viewOptions.setLaneInfoShow(true);
+        viewOptions.setAutoChangeZoom(true);
+        viewOptions.setAutoDrawRoute(true);
+        viewOptions.setTrafficLine(true);
+        //获取AMapNavi实例
+        mAMapNavi = AMapNavi.getInstance(getApplicationContext());
+        //设置模拟导航的行车速度
+        mAMapNavi.setEmulatorNaviSpeed(75);
+        sList.add(mStartLatlng);
+        eList.add(mEndLatlng);//添加监听回调，用于处理算路成功
+        mAMapNavi.addAMapNaviListener(new MyAMapNaviListener() {
             @Override
             public void myOnInitNaviSuccess() {
                 if ("自动".equals(navitype)){
@@ -92,29 +114,7 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
                 }
 
             }
-
-
-
-
-
-
-        };
-
-        mAMapNaviView.onCreate(savedInstanceState);
-        mAMapNaviView.setAMapNaviViewListener(this);
-        AMapNaviViewOptions viewOptions = mAMapNaviView.getViewOptions();
-        viewOptions.setLayoutVisible(true);
-        viewOptions.setLaneInfoShow(true);
-        viewOptions.setAutoChangeZoom(true);
-        viewOptions.setAutoDrawRoute(true);
-        viewOptions.setTrafficLine(true);
-        //获取AMapNavi实例
-        mAMapNavi = AMapNavi.getInstance(getApplicationContext());
-        //设置模拟导航的行车速度
-        mAMapNavi.setEmulatorNaviSpeed(75);
-        sList.add(mStartLatlng);
-        eList.add(mEndLatlng);//添加监听回调，用于处理算路成功
-        mAMapNavi.addAMapNaviListener(myAMapNaviListener);
+        });
         mAMapNavi.addAMapNaviListener(mTtsManager);
         /**
          * 方法:
@@ -183,11 +183,29 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
 
     @Override
     public void onNaviCancel() {
-            finish();
+
+        Log.e(TAG, "onNaviBackClick: "+"lueluelueonNaviCancel" );
+        //测试环境使用
+        //Instrumentation inst = new Instrumentation();
+        //inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
+        //可用但不适用于此
+//        Runtime runtime = Runtime.getRuntime();
+//        try {
+//            runtime.exec("input keyevent " + KeyEvent.KEYCODE_BACK);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        runOnUiThread(new Runnable() { @Override public void run() {
+//            onBackPressed(); }
+//        });
+
+        finish();
+
     }
 
     @Override
     public boolean onNaviBackClick() {
+        Log.e(TAG, "onNaviBackClick: "+"lueluelueonNaviBackClick" );
         return false;
     }
 
@@ -233,6 +251,7 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
         mAMapNaviView.onPause();
         //        仅仅是停止你当前在说的这句话，一会到新的路口还是会再说的
         mTtsManager.stopSpeaking();
+        Log.e(TAG, "onNaviBackClick: "+"lueluelueonPause()" );
     }
 
     @Override
@@ -240,5 +259,8 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
         super.onDestroy();
         mAMapNaviView.onDestroy();
         mTtsManager.destroy();
+        mAMapNavi.destroy();
+        Log.e(TAG, "onNaviBackClick: "+"lueluelueonDestroy()" );
     }
+
 }

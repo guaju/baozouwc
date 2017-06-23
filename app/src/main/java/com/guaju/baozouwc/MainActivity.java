@@ -41,7 +41,7 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter,Geo
     private AMap mAmap;
     private ActionBar actionBar;
     private LatLng latLng;
-    private LatLng mylatlng;
+    private static LatLng mylatlng;
     public static final int SHOW_LOCATION = 0;
     private String lastKnowLoc;
     private GeocodeSearch geocoderSearch;
@@ -54,7 +54,7 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter,Geo
     private AlertDialog alertDialog;
     private boolean value=true;
     private Intent intent;
-    private LatLonPoint latLonPoint;
+    private static LatLonPoint latLonPoint;
     boolean innerNavDialogFlag=true;
     private AlertDialog innerNavDialog;
 
