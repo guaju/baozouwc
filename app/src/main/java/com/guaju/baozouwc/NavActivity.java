@@ -251,7 +251,6 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
         mAMapNaviView.onPause();
         //        仅仅是停止你当前在说的这句话，一会到新的路口还是会再说的
         mTtsManager.stopSpeaking();
-        Log.e(TAG, "onNaviBackClick: "+"lueluelueonPause()" );
     }
 
     @Override
@@ -260,7 +259,6 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
         mAMapNaviView.onDestroy();
         mTtsManager.destroy();
         mAMapNavi.destroy();
-        Log.e(TAG, "onNaviBackClick: "+"lueluelueonDestroy()" );
     }
 
 }
