@@ -214,6 +214,7 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
 
     }
 
+
     @Override
     public void onNaviTurnClick() {
 
