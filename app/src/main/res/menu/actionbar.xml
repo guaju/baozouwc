@@ -37,6 +37,10 @@
         app:showAsAction="ifRoom"
         android:title="公交车"
         />
-
+    <item
+        android:id="@+id/getlatlng"
+        app:showAsAction="ifRoom"
+        android:title="拿坐标"
+        />
 
 </menu>

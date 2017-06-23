@@ -32,7 +32,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NavActivity"></activity>
+        <activity android:name=".NavActivity"
+            android:theme="@style/wc"
+            ></activity>
+        <activity android:name=".NavActivity2"></activity>
     </application>
 
 </manifest>

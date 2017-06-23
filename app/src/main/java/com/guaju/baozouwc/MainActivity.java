@@ -3,6 +3,7 @@ package com.guaju.baozouwc;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,12 +26,16 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.geocoder.GeocodeQuery;
+import com.amap.api.services.geocoder.GeocodeResult;
 import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeResult;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
+public class MainActivity extends Activity implements AMap.InfoWindowAdapter,GeocodeSearch.OnGeocodeSearchListener {
     private static final String TAG = "MainActivity";
     MapView mMapView = null;
     private AMap mAmap;
@@ -48,6 +53,10 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
     private Marker currentMarker;
     private AlertDialog alertDialog;
     private boolean value=true;
+    private Intent intent;
+    private LatLonPoint latLonPoint;
+    boolean innerNavDialogFlag=true;
+    private AlertDialog innerNavDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,8 +113,12 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
             public void onInfoWindowClick(Marker marker) {
                 Toast.makeText(MainActivity.this, marker.getTitle(), Toast.LENGTH_SHORT).show();
                 initLv(value);
-
+                if (alertDialog!=null){
                 alertDialog.show();
+                }
+                if (innerNavDialog!=null){
+                innerNavDialog.show();
+                }
             }
         });
     }
@@ -129,7 +142,8 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
         } if (installnav) {
             list.add("高德地图");
         } else {
-            startActivity(new Intent(MainActivity.this,NavActivity.class));
+            intent = new Intent(MainActivity.this, NavActivity.class);
+            initInnerNavDialog(innerNavDialogFlag);
             return;
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, list);
@@ -166,6 +180,33 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
 
     }
 
+    private void initInnerNavDialog(boolean b) {
+        if(!b){
+            return;
+        }
+        if (b){
+            b=false;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final String[] navtypes={"自动","驾车","骑行","步行"};
+        builder.setItems(navtypes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("mylocation",mylatlng);
+                bundle.putParcelable("deslocation",latLonPoint);
+                bundle.putString("navitype",navtypes[which]);
+                intent.putExtra("bundle",bundle);
+                startActivity(intent);
+            }
+        });
+        innerNavDialog = builder.create();
+
+
+
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -197,6 +238,8 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
         return super.onCreateOptionsMenu(menu);
     }
 
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
@@ -208,7 +251,7 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
                 myLocationStyle.showMyLocation(true);
                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.dog);
                 myLocationStyle.myLocationIcon(bitmapDescriptor);
-                myLocationStyle.anchor(0.0f,0.0f);
+//                myLocationStyle.anchor(0.0f,0.0f);
                // myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW);
 //                myLocationStyle.
                 mAmap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
@@ -249,6 +292,17 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
             case R.id.bus:
                 mAmap.setMapType(AMap.MAP_TYPE_BUS);
                 break;
+            case R.id.getlatlng:
+                //构造 GeocodeSearch 对象，并设置监听。
+                GeocodeSearch   geocodeSearch = new GeocodeSearch(this);
+                geocodeSearch.setOnGeocodeSearchListener(this);
+            //通过GeocodeQuery设置查询参数,调用getFromLocationNameAsyn(GeocodeQuery geocodeQuery) 方法发起请求。
+            //address表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode都ok
+                GeocodeQuery query = new GeocodeQuery("南口公园", "010");
+                geocodeSearch.getFromLocationNameAsyn(query);
+
+
+                break;
         }
 
 
@@ -279,4 +333,16 @@ public class MainActivity extends Activity implements AMap.InfoWindowAdapter {
     public View getInfoContents(Marker marker) {
         return null;
     }
+
+    @Override
+    public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
+
+    }
+
+    @Override
+    public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
+        latLonPoint = geocodeResult.getGeocodeAddressList().get(0).getLatLonPoint();
+        Toast.makeText(this, latLonPoint.getLatitude()+"---"+ latLonPoint.getLongitude(), Toast.LENGTH_SHORT).show();
+    }
+
 }
