@@ -115,6 +115,8 @@ public class NavActivity extends Activity implements AMapNaviViewListener{
 
             }
         });
+
+
         mAMapNavi.addAMapNaviListener(mTtsManager);
         /**
          * 方法:
